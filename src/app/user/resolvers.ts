@@ -62,6 +62,38 @@ const extraResolvers = {
        
        
     },
+    recommendedUsers: async(parent : User, _ : any, ctx : GraphqlContext) => {
+        if(!ctx.user) return [];
+
+            const myFollowings = await prismaClient.follows.findMany({
+                where : {
+                    follower : {id: ctx.user.id},
+                },
+                include : {
+                    following : { include : {followers : {include : {following : true} } } } 
+                 },
+                    // I want to get followers of my followings
+            
+            });
+            const users : User[] = [];
+
+            for(const followings of myFollowings){
+                //I want to get followers of my followings
+                for(const followingOfFollowedUser of followings.following.followers){
+
+                    if(followingOfFollowedUser.following.id !== ctx.user.id && //should not be logged in user
+                        myFollowings.findIndex((e) => e?.followingId === followingOfFollowedUser.following.id) < 0){ //
+
+                            users.push(followingOfFollowedUser.following);
+
+                        }                        
+                }
+            }
+           
+
+            return users;
+
+    },
     },
 };
 
