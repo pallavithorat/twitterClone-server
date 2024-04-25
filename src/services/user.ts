@@ -67,6 +67,7 @@ class UserService{
     }
 
     public static getUserById(id: string) {
+        
         return prismaClient.user.findUnique({ where: { id } });
     }
 
